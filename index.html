@@ -153,7 +153,6 @@
   }
 
   .upload-icon svg { width: 20px; height: 20px; stroke: var(--text-muted); }
-
   .upload-zone .upload-text { font-size: 14px; color: var(--text); font-weight: 400; }
   .upload-zone .upload-sub { font-size: 12px; color: var(--text-faint); margin-top: 4px; }
 
@@ -224,27 +223,10 @@
   }
 
   .extracted-row:last-child { border-bottom: none; }
+  .extracted-row .ekey { font-size: 12px; font-family: var(--mono); color: var(--info-text); opacity: 0.6; white-space: nowrap; }
+  .extracted-row .eval { font-size: 13px; color: var(--info-text); font-weight: 500; text-align: right; }
 
-  .extracted-row .ekey {
-    font-size: 12px;
-    font-family: var(--mono);
-    color: var(--info-text);
-    opacity: 0.6;
-    white-space: nowrap;
-  }
-
-  .extracted-row .eval {
-    font-size: 13px;
-    color: var(--info-text);
-    font-weight: 500;
-    text-align: right;
-  }
-
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 1.5rem 0;
-  }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
   .submit-btn {
     width: 100%;
@@ -278,26 +260,9 @@
     line-height: 1.5;
   }
 
-  .status.success {
-    background: var(--accent-light);
-    color: var(--accent-text);
-    border: 1px solid #b2d4c4;
-    display: block;
-  }
-
-  .status.error {
-    background: var(--danger-light);
-    color: var(--danger);
-    border: 1px solid #f0c0bb;
-    display: block;
-  }
-
-  .status.loading {
-    background: #f0f0f0;
-    color: var(--text-muted);
-    border: 1px solid var(--border);
-    display: block;
-  }
+  .status.success { background: var(--accent-light); color: var(--accent-text); border: 1px solid #b2d4c4; display: block; }
+  .status.error { background: var(--danger-light); color: var(--danger); border: 1px solid #f0c0bb; display: block; }
+  .status.loading { background: #f0f0f0; color: var(--text-muted); border: 1px solid var(--border); display: block; }
 
   .spinner {
     width: 16px;
@@ -312,9 +277,7 @@
 
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  @media (max-width: 480px) {
-    .card { padding: 1.25rem; }
-  }
+  @media (max-width: 480px) { .card { padding: 1.25rem; } }
 </style>
 </head>
 <body>
@@ -373,21 +336,16 @@
 </div>
 
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzd9WjgANyN-dMpcEtXASL1Acnv6R-Jr8-hGTcAc2BsMxVCAsubyKbHMk-XLBlAFXTM/exec';
-  const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxOJNVIM-W8o5BRW4eHWjfpa0LCNxeYo-Rl5pdASA4LhrrDf6-s-1nj3J5FlmlaIfga/exec';
 
   let fileData = null;
   let fileName = null;
   let fileSize = null;
-  let extractedData = null;
 
   const fileInput = document.getElementById('file-input');
   const dropZone = document.getElementById('drop-zone');
 
-  fileInput.addEventListener('change', e => {
-    if (e.target.files[0]) processFile(e.target.files[0]);
-  });
-
+  fileInput.addEventListener('change', e => { if (e.target.files[0]) processFile(e.target.files[0]); });
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
   dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', e => {
@@ -397,13 +355,9 @@
   });
 
   function processFile(file) {
-    if (file.size > 5 * 1024 * 1024) {
-      showStatus('error', 'File is too large. Please upload an image under 5MB.');
-      return;
-    }
+    if (file.size > 5 * 1024 * 1024) { showStatus('error', 'File too large. Max 5MB.'); return; }
     fileName = file.name;
     fileSize = (file.size / 1024).toFixed(0) + ' KB';
-    extractedData = null;
     document.getElementById('extracted-box').style.display = 'none';
     const reader = new FileReader();
     reader.onload = ev => {
@@ -416,7 +370,7 @@
   }
 
   function removeFile() {
-    fileData = null; fileName = null; fileSize = null; extractedData = null;
+    fileData = null; fileName = null; fileSize = null;
     fileInput.value = '';
     document.getElementById('preview-wrap').style.display = 'none';
     document.getElementById('extracted-box').style.display = 'none';
@@ -442,13 +396,14 @@
     const btnText = document.getElementById('btn-text');
     btn.disabled = on;
     spinner.style.display = on ? 'block' : 'none';
-    btnText.textContent = on ? (msg || 'Working...') : 'Analyse &amp; Save to Sheet';
-    if (!on) btnText.innerHTML = 'Analyse &amp; Save to Sheet';
+    if (on) {
+      btnText.textContent = msg || 'Working...';
+    } else {
+      btnText.innerHTML = 'Analyse &amp; Save to Sheet';
+    }
   }
 
   function renderExtracted(data) {
-    const box = document.getElementById('extracted-box');
-    const rows = document.getElementById('extracted-rows');
     const fields = [
       { key: 'amount', label: 'Amount' },
       { key: 'currency', label: 'Currency' },
@@ -457,110 +412,45 @@
       { key: 'bank', label: 'Bank / platform' },
       { key: 'notes', label: 'Notes' }
     ];
-    rows.innerHTML = fields
+    const rows = fields
       .filter(f => data[f.key] && data[f.key] !== 'N/A' && data[f.key] !== '')
       .map(f => `<div class="extracted-row"><span class="ekey">${f.label}</span><span class="eval">${data[f.key]}</span></div>`)
       .join('');
-    box.style.display = 'block';
-  }
-
-  async function analyseImage() {
-    const base64 = fileData.split(',')[1];
-    const mimeType = fileData.split(';')[0].split(':')[1];
-
-    const res = await fetch(CLAUDE_API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 500,
-        system: `You are a payment screenshot reader. Extract key details from bank transfer or payment screenshots. 
-Respond ONLY with a valid JSON object — no markdown, no extra text.
-Fields to extract (use empty string if not found):
-{
-  "amount": "",
-  "currency": "",
-  "reference": "",
-  "date": "",
-  "bank": "",
-  "notes": ""
-}
-For "notes", include any other relevant detail visible (recipient account, sender account last digits, transaction type, etc).`,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-            { type: 'text', text: 'Extract all payment details from this screenshot.' }
-          ]
-        }]
-      })
-    });
-
-    const data = await res.json();
-    const textBlock = data.content && data.content.find(b => b.type === 'text');
-    if (!textBlock) throw new Error('No response from Claude.');
-    const clean = textBlock.text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+    document.getElementById('extracted-rows').innerHTML = rows;
+    document.getElementById('extracted-box').style.display = rows ? 'block' : 'none';
   }
 
   async function handleSubmit() {
     clearStatus();
-
     const senderName = document.getElementById('sender-name').value.trim();
-    if (!senderName) {
-      showStatus('error', 'Please enter the sender\'s name.');
-      document.getElementById('sender-name').focus();
-      return;
-    }
-    if (!fileData) {
-      showStatus('error', 'Please upload a screenshot first.');
-      return;
-    }
+    if (!senderName) { showStatus('error', 'Please enter the sender\'s name.'); return; }
+    if (!fileData) { showStatus('error', 'Please upload a screenshot first.'); return; }
 
     setLoading(true, 'Reading screenshot...');
 
+    const timestamp = new Date().toLocaleString('en-PH', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    });
+
     try {
-      // Step 1: analyse image with Claude
-      const extracted = await analyseImage();
-      extractedData = extracted;
-      renderExtracted(extracted);
-
-      // Step 2: send everything to Google Sheet
-      setLoading(true, 'Saving to sheet...');
-
-      const timestamp = new Date().toLocaleString('en-PH', {
-        timeZone: 'Asia/Manila',
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: '2-digit', minute: '2-digit', second: '2-digit',
-        hour12: false
-      });
-
-      const payload = {
-        timestamp,
-        senderName,
-        amount: extracted.amount || '',
-        currency: extracted.currency || '',
-        reference: extracted.reference || '',
-        transferDate: extracted.date || '',
-        bank: extracted.bank || '',
-        notes: extracted.notes || '',
-        fileName: fileName || '',
-        imageData: fileData || ''
-      };
-
-      await fetch(SCRIPT_URL, {
+      const res = await fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ timestamp, senderName, fileName, imageData: fileData }),
         mode: 'no-cors'
       });
 
-      showStatus('success', '✓ Saved! Details extracted and logged to Google Sheet.');
+      // no-cors = can't read response, but show extracted preview isn't possible this way
+      // So we show success and clear form
+      showStatus('success', '✓ Saved! Screenshot analysed and logged to Google Sheet.');
       document.getElementById('sender-name').value = '';
       removeFile();
 
     } catch (err) {
-      showStatus('error', 'Something went wrong: ' + err.message);
+      showStatus('error', 'Failed to save: ' + err.message);
     }
 
     setLoading(false);
