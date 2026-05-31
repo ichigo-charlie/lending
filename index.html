@@ -2,6 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Pay Logger" />
+<meta name="theme-color" content="#2a5c45" />
+<link rel="manifest" href="manifest.json" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Payment Logger</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
@@ -99,7 +105,7 @@
 </div>
 
 <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbybviL4DbEkzk-ZAQuvwAboHfdHzRDoid61CTr5gQvnywYeynJXXj1_ILHRI8ZeEcBt/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxRmitdtYa95wSh-g4j36MdkYzSJJxxhpA0kgayvcJKONuFVvFcuXdXTY6QY9bq4d2Q/exec';
 
   let fileData = null, fileName = null, fileSize = null;
 
